@@ -3,7 +3,8 @@ const { promisify } = require('util')
 const path = require("path")
 const fs = require("fs")
 const readdir = promisify(fs.readdir)
-const stat = promisify(fs.stat);
+const stat = promisify(fs.stat)
+const ExifReader = require('exifreader')
 
 const createWindow = () => {
     const win = new BrowserWindow({
@@ -48,14 +49,29 @@ getFiles = async (dir) => {
     const subdirs = await readdir(dir)
     const files = await Promise.all(subdirs.map(async (subdir) => {
       const res = path.resolve(dir, subdir)
-      return (await stat(res)).isDirectory() ? getFiles(res) : res;
+      return (await stat(res)).isDirectory() ? getFiles(res) : res
     }))
-    return files.reduce((a, f) => a.concat(f), []); 
+    return files.reduce((a, f) => a.concat(f), []);
 }
 
 loadData = async (dirs) => {
+    models = {}
     dirs.forEach(dir => {
         getFiles(dir)
-            .then(files => console.log(files))
+            .then(files => {
+                files.forEach(async file => {
+                    try {
+                        const tags = await ExifReader.load(file)
+                        //model = `${tags.Image.Make} ${tags.Image.Model}`
+                        //if (!tags.Image.Make && !tags.Image.Model) model = "Unknown"
+                        //if (models[model]) models[model]++
+                        //else models[model] = 1
+                        console.log(tags["Image"])
+                    } catch (e) {
+                        //console.log(e)
+                    }
+                })
+            })
     })
+    console.log(models)
 }
