@@ -1,0 +1,32 @@
+{
+  "name": "library-exif-analyzer",
+  "version": "1.0.0",
+  "description": "Photo library analyzer that uses EXIF data to show a breakdown (using camera model, etc.)",
+  "main": "index.js",
+  "scripts": {
+    "start": "electron-forge start",
+    "package": "electron-forge package",
+    "make": "electron-forge make"
+  },
+  "repository": {
+    "type": "git",
+    "url": "library-exif-analyzer"
+  },
+  "author": "Alan D'souza",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "@electron/remote": "^2.1.2",
+    "electron-squirrel-startup": "^1.0.0",
+    "exifreader": "^4.21.0"
+  },
+  "devDependencies": {
+    "@electron-forge/cli": "^7.3.0",
+    "@electron-forge/maker-deb": "^7.3.0",
+    "@electron-forge/maker-rpm": "^7.3.0",
+    "@electron-forge/maker-squirrel": "^7.3.0",
+    "@electron-forge/maker-zip": "^7.3.0",
+    "@electron-forge/plugin-auto-unpack-natives": "^7.3.0",
+    "@electron-forge/plugin-fuses": "^7.3.0",
+    "electron": "^29.0.1"
+  }
+}
