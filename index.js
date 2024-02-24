@@ -19,15 +19,12 @@ const createWindow = () => {
     
     win.loadFile('index.html')
     
-    ipcMain.handle('dialog:openDirectory', async () => {
+    ipcMain.handle('dialog:openDirectory', async (event) => {
         const { canceled, filePaths } = await dialog.showOpenDialog(win, {
             properties: ['openDirectory']
         })
-        if (canceled) {
-            return
-        } else {
-            return loadData(filePaths)
-        }
+        if (canceled) return
+        return await loadData(filePaths)
     })
 }
 
@@ -55,23 +52,45 @@ getFiles = async (dir) => {
 }
 
 loadData = async (dirs) => {
-    models = {}
-    dirs.forEach(dir => {
-        getFiles(dir)
-            .then(files => {
-                files.forEach(async file => {
-                    try {
-                        const tags = await ExifReader.load(file)
-                        //model = `${tags.Image.Make} ${tags.Image.Model}`
-                        //if (!tags.Image.Make && !tags.Image.Model) model = "Unknown"
-                        //if (models[model]) models[model]++
-                        //else models[model] = 1
-                        console.log(tags["Image"])
-                    } catch (e) {
-                        //console.log(e)
+    // make a list of promises for each iteration of the for loop
+    promises = []
+
+    makes = {}
+    lenses = {}
+    for (dir of dirs) {
+        promises.push(new Promise((resolve, reject) => {
+            getFiles(dir)
+                .then(async files => {
+                    for await (file of files) {
+                        try {
+                            const tags = await ExifReader.load(file)
+
+                            make = tags.Make.value[0]
+                            if (!make) make = "Unknown"
+                            // if make not in object, add it with count 1, otherwise increase count
+                            if (makes[make]) {
+                                makes[make].count++
+                            } else {
+                                makes[make] = { count: 1, models: {} }
+                            }
+
+                            model = tags.Model.value[0]
+                            if (!model) model = "Unknown"
+                            // if model not in object, add it with count 1, otherwise increase count
+                            if (makes[make].models[model]) {
+                                makes[make].models[model]++
+                            } else {
+                                makes[make].models[model] = 1
+                            }
+                        } catch (e) {
+                            console.log(e)
+                        }
                     }
-                })
-            })
-    })
-    console.log(models)
+                }).then(() => resolve())
+        }))
+    }
+
+    await Promise.all(promises)
+    console.log("aaaaaaaaaaaaaaaaaaaaaaaaghghhghgh")
+    return makes
 }
