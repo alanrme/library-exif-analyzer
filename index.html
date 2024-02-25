@@ -9,6 +9,7 @@
 
 <body>
     <div class="section">
+        <h1 id="status">Welcome.</h1>
         Select directory <input id="openpicker" type="button" value="Select directory" />
     </div>
 
@@ -43,6 +44,20 @@
 
     <div class="section" id="models">
         <h1>Breakdown by camera models</h1>
+        <div class="loader"></div>
+        <div id="modeldata"></div>
+
+        <template id="modelprog">
+            <div class="model card">
+                <h2 class="model"></h2>
+                <progress value="0" max="100"></progress>
+                <span class="count"></span>
+            </div>
+        </template>
+    </div>
+
+    <div class="section" id="models">
+        <h1>Breakdown by focal lengths (35mm eq.)</h1>
         <div class="loader"></div>
         <div id="modeldata"></div>
 

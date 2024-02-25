@@ -1,8 +1,10 @@
 dirButton = document.getElementById("openpicker")
+statusH = document.getElementById("status")
 makeModelData = document.getElementById("makemodeldata")
 modelData = document.getElementById("modeldata")
 
 dirButton.addEventListener("click", async e => {
+    statusH.innerText = "Loading photos..."
     data = await window.API.selectFolder()
     console.log(data)
 
@@ -11,6 +13,9 @@ dirButton.addEventListener("click", async e => {
     if (data) {
         makeModelData.replaceChildren()
         modelData.replaceChildren()
+        statusH.innerText = data.total + " photos/videos"
+    } else {
+        statusH.innerText = "Selection cancelled."
     }
 
     makes = data.makes

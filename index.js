@@ -57,46 +57,47 @@ loadData = async (dirs) => {
 
     makes = {}
     lenses = {}
-    focalLengths = {}
+    fLengths35 = {}
     total = 0
     for (dir of dirs) {
         promises.push(new Promise((resolve, reject) => {
             getFiles(dir)
                 .then(async files => {
                     for await (file of files) {
-                        try {
-                            // length option loads first 128kb of the file which is likely to contain necessary metadata
-                            tags = await ExifReader.load(file, {length: 128 * 1024})
+                        total++
 
-                            // if any tags that this program uses are missing, try loading the entire file
-                            if (["Make", "Model", "FocalLength"].some((i) => !tags[i])) {
-                                tags = await ExifReader.load(file)
-                                make = tags.Make.value[0]
-                                model = tags.Model.value[0]
-                            }
+                        // length option loads first 128kb of the file which is likely to contain necessary metadata
+                        tags = await ExifReader.load(file, {length: 128 * 1024})
 
-                            make = tags.Make.value[0]
-                            if (!make) make = "Unknown"
-                            // if make not in object, add it with count 1, otherwise increase count
-                            if (makes[make]) {
-                                makes[make].count++
-                            } else {
-                                makes[make] = { count: 1, models: {} }
-                            }
-
-                            model = tags.Model.value[0]
-                            if (!model) model = "Unknown"
-                            // if model not in object, add it with count 1, otherwise increase count
-                            if (makes[make].models[model]) {
-                                makes[make].models[model]++
-                            } else {
-                                makes[make].models[model] = 1
-                            }
-
-                            total++
-                        } catch (e) {
-                            console.log(e)
+                        // if any tags that this program uses are missing, try loading the entire file
+                        if (["Make", "Model", "FocalLengthIn35mmFilm"].some((i) => !tags[i])) {
+                            tags = await ExifReader.load(file)
                         }
+
+                        // ?. is optional chaining,  it causes the value to default to undefined if
+                        // the property succeeding ?. doesn't exist.
+                        make = tags.Make?.value[0] || "Unknown"
+                        // if make not in object, add it with count 1, otherwise increase count
+                        if (makes[make]) {
+                            makes[make].count++
+                        } else {
+                            makes[make] = { count: 1, models: {} }
+                        }
+
+                        model = tags.Model?.value[0] || "Unknown"
+                        if (makes[make].models[model]) {
+                            makes[make].models[model]++
+                        } else {
+                            makes[make].models[model] = 1
+                        }
+
+                        fLength35 = tags.FocalLengthIn35mmFilm?.value || "Unknown"
+                        if (fLengths35[fLength35]) {
+                            fLengths35[fLength35]++
+                        } else {
+                            fLengths35[fLength35] = 1
+                        }
+                        console.log(make, model, fLength35)
                     }
                 }).then(() => resolve())
         }))
@@ -107,6 +108,7 @@ loadData = async (dirs) => {
     return {
         makes: makes,
         lenses: lenses,
-        total: total,
+        focalLengths35: fLengths35,
+        total: total
     }
 }
