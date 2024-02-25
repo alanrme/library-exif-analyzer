@@ -16,8 +16,13 @@ div.card {
     border-radius: 1em;
 }
 
+div.card .card {
+    margin: 0em 1em;
+    border: none;
+}
+
 div.card h2 {
-    margin-bottom: 0;
+    margin: 0;
 }
 div.card p {
     margin: 0;
