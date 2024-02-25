@@ -55,16 +55,25 @@ loadData = async (dirs) => {
     // make a list of promises for each iteration of the for loop
     promises = []
 
-    makes = { }
-    lenses = { }
-    totals = { makes: 0, lenses: 0 }
+    makes = {}
+    lenses = {}
+    focalLengths = {}
+    total = 0
     for (dir of dirs) {
         promises.push(new Promise((resolve, reject) => {
             getFiles(dir)
                 .then(async files => {
                     for await (file of files) {
                         try {
-                            const tags = await ExifReader.load(file)
+                            // length option loads first 128kb of the file which is likely to contain necessary metadata
+                            tags = await ExifReader.load(file, {length: 128 * 1024})
+
+                            // if any tags that this program uses are missing, try loading the entire file
+                            if (["Make", "Model", "FocalLength"].some((i) => !tags[i])) {
+                                tags = await ExifReader.load(file)
+                                make = tags.Make.value[0]
+                                model = tags.Model.value[0]
+                            }
 
                             make = tags.Make.value[0]
                             if (!make) make = "Unknown"
@@ -84,7 +93,7 @@ loadData = async (dirs) => {
                                 makes[make].models[model] = 1
                             }
 
-                            totals.makes++
+                            total++
                         } catch (e) {
                             console.log(e)
                         }
@@ -98,6 +107,6 @@ loadData = async (dirs) => {
     return {
         makes: makes,
         lenses: lenses,
-        totals: totals,
+        total: total,
     }
 }

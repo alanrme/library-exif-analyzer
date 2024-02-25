@@ -7,8 +7,11 @@ dirButton.addEventListener("click", async e => {
     console.log(data)
 
     // clear any existing progress bars
-    makeModelData.replaceChildren()
-    modelData.replaceChildren()
+    // only if anything was returned (i.e. a folder was actually selected vs clicking cancel)
+    if (data) {
+        makeModelData.replaceChildren()
+        modelData.replaceChildren()
+    }
 
     makes = data.makes
     lenses = data.lenses
@@ -18,7 +21,7 @@ dirButton.addEventListener("click", async e => {
         // get the contents of the <template> for a camera make and make>model cards
         maketmpl = document.getElementById("makeprog").content.cloneNode(1).firstElementChild
 
-        maketmpl.getElementsByTagName("progress")[0].value = 100*(make.count/data.totals.makes)
+        maketmpl.getElementsByTagName("progress")[0].value = 100*(make.count/data.total)
         count = document.createTextNode(make.count)
         maketmpl.getElementsByClassName("count")[0].appendChild(count)
         makeTxt = document.createTextNode(makeName)
@@ -41,7 +44,7 @@ dirButton.addEventListener("click", async e => {
 
             modeltmpl = document.getElementById("modelprog").content.cloneNode(1).firstElementChild
 
-            modeltmpl.getElementsByTagName("progress")[0].value = 100*(model/totals.makes.count)
+            modeltmpl.getElementsByTagName("progress")[0].value = 100*(model/data.total)
             count = document.createTextNode(model)
             modeltmpl.getElementsByClassName("count")[0].appendChild(count)
             makeAndModelNameTxt = document.createTextNode(makeName + " " + modelName)
