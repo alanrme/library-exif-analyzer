@@ -12,6 +12,7 @@ const createWindow = () => {
         height: 600,
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
+            autoHideMenuBar: true,
             nodeIntegration: false,
             contextIsolation: true
         }
@@ -45,8 +46,12 @@ app.on('window-all-closed', () => {
 getFiles = async (dir) => {
     const subdirs = await readdir(dir)
     const files = await Promise.all(subdirs.map(async (subdir) => {
-      const res = path.resolve(dir, subdir)
-      return (await stat(res)).isDirectory() ? getFiles(res) : res
+        try {
+            const res = path.resolve(dir, subdir)
+            return (await stat(res)).isDirectory() ? getFiles(res) : res
+        } catch (e) {
+            console.error(e)
+        }
     }))
     return files.reduce((a, f) => a.concat(f), []);
 }
@@ -64,42 +69,48 @@ loadData = async (dirs) => {
             getFiles(dir)
                 .then(async files => {
                     for await (file of files) {
-                        total++
-
-                        // length option loads first 128kb of the file which is likely to contain necessary metadata
-                        tags = await ExifReader.load(file, {length: 128 * 1024})
-
-                        // if any tags that this program uses are missing, try loading the entire file
-                        if (["Make", "Model", "FocalLengthIn35mmFilm"].some((i) => !tags[i])) {
-                            tags = await ExifReader.load(file)
+                        try {
+                            total++
+    
+                            // length option loads first 128kb of the file which is likely to contain necessary metadata
+                            tags = await ExifReader.load(file, {length: 128 * 1024})
+    
+                            // if any tags that this program uses are missing, try loading the entire file
+                            if (["Make", "Model", "FocalLengthIn35mmFilm"].some((i) => !tags[i])) {
+                                tags = await ExifReader.load(file)
+                            }
+    
+                            // ?. is optional chaining,  it causes the value to default to undefined if
+                            // the property succeeding ?. doesn't exist.
+                            make = tags.Make?.value[0] || "Unknown"
+                            // if make not in object, add it with count 1, otherwise increase count
+                            if (makes[make]) {
+                                makes[make].count++
+                            } else {
+                                makes[make] = { count: 1, models: {} }
+                            }
+    
+                            model = tags.Model?.value[0] || "Unknown"
+                            if (makes[make].models[model]) {
+                                makes[make].models[model]++
+                            } else {
+                                makes[make].models[model] = 1
+                            }
+    
+                            fLength35 = tags.FocalLengthIn35mmFilm?.value || "Unknown"
+                            if (fLengths35[fLength35]) {
+                                fLengths35[fLength35]++
+                            } else {
+                                fLengths35[fLength35] = 1
+                            }
+                            console.log(make, model, fLength35)
+                        } catch (e) {
+                            console.error(e)
+                            continue
                         }
-
-                        // ?. is optional chaining,  it causes the value to default to undefined if
-                        // the property succeeding ?. doesn't exist.
-                        make = tags.Make?.value[0] || "Unknown"
-                        // if make not in object, add it with count 1, otherwise increase count
-                        if (makes[make]) {
-                            makes[make].count++
-                        } else {
-                            makes[make] = { count: 1, models: {} }
-                        }
-
-                        model = tags.Model?.value[0] || "Unknown"
-                        if (makes[make].models[model]) {
-                            makes[make].models[model]++
-                        } else {
-                            makes[make].models[model] = 1
-                        }
-
-                        fLength35 = tags.FocalLengthIn35mmFilm?.value || "Unknown"
-                        if (fLengths35[fLength35]) {
-                            fLengths35[fLength35]++
-                        } else {
-                            fLengths35[fLength35] = 1
-                        }
-                        console.log(make, model, fLength35)
                     }
-                }).then(() => resolve())
+                })
+                .then(() => resolve())
         }))
     }
 
