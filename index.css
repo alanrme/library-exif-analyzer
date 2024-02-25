@@ -1,0 +1,24 @@
+body {
+    font-family: sans-serif;
+}
+
+div.section {
+    margin: 1em;
+    padding: 0.5em 1em;
+    border: 1px solid black;
+    border-radius: 1em;
+}
+
+div.card {
+    margin: 1em;
+    padding: 0.5em 1em;
+    border: 1px solid black;
+    border-radius: 1em;
+}
+
+div.card h2 {
+    margin-bottom: 0;
+}
+div.card p {
+    margin: 0;
+}

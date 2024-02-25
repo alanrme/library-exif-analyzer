@@ -55,8 +55,9 @@ loadData = async (dirs) => {
     // make a list of promises for each iteration of the for loop
     promises = []
 
-    makes = {}
-    lenses = {}
+    makes = { }
+    lenses = { }
+    totals = { makes: 0, lenses: 0 }
     for (dir of dirs) {
         promises.push(new Promise((resolve, reject) => {
             getFiles(dir)
@@ -82,6 +83,8 @@ loadData = async (dirs) => {
                             } else {
                                 makes[make].models[model] = 1
                             }
+
+                            totals.makes++
                         } catch (e) {
                             console.log(e)
                         }
@@ -92,5 +95,9 @@ loadData = async (dirs) => {
 
     await Promise.all(promises)
     console.log("aaaaaaaaaaaaaaaaaaaaaaaaghghhghgh")
-    return makes
+    return {
+        makes: makes,
+        lenses: lenses,
+        totals: totals,
+    }
 }

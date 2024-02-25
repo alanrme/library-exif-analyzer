@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'">
     <title>EXIF analyzer</title>
+    <link rel="stylesheet" href="./index.css">
 </head>
 
 <body>
@@ -11,8 +12,47 @@
         Select directory <input id="openpicker" type="button" value="Select directory" />
     </div>
 
-    <div class="section">
-        <span id="data"></span>
+    <div class="section" id="makemodels">
+        <h1>Breakdown by camera brand, then model</h1>
+        <div class="loader"></div>
+        <div id="makemodeldata"></div>
+
+        <template id="makeprog">
+            <div class="camera card">
+                <h2 class="make"></h2>
+                <progress value="0" max="100"></progress>
+                <span class="count"></span>
+                <div class="card models"></div>
+            </div>
+        </template>
+        <template id="mmodelprog">
+            <div class="mmodel">
+                <p class="model"></p>
+                <progress value="0" max="100"></progress>
+                <span class="count"></span>
+            </div>
+        </template>
+        <template id="mlensprog">
+            <div class="mlens">
+                <p class="lens"></p>
+                <progress value="0" max="100"></progress>
+                <span class="count"></span>
+            </div>
+        </template>
+    </div>
+
+    <div class="section" id="models">
+        <h1>Breakdown by camera models</h1>
+        <div class="loader"></div>
+        <div id="modeldata"></div>
+
+        <template id="modelprog">
+            <div class="model card">
+                <h2 class="model"></h2>
+                <progress value="0" max="100"></progress>
+                <span class="count"></span>
+            </div>
+        </template>
     </div>
 
     <script src="./renderer.js"></script>
