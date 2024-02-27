@@ -70,10 +70,10 @@ loadData = async (dirs) => {
                 .then(async files => {
                     for await (file of files) {
                         try {
-                            total++
-    
                             // length option loads first 128kb of the file which is likely to contain necessary metadata
                             tags = await ExifReader.load(file, {length: 128 * 1024})
+                            // increment total if file has successfully loaded
+                            total++
     
                             // if any tags that this program uses are missing, try loading the entire file
                             if (["Make", "Model", "FocalLengthIn35mmFilm"].some((i) => !tags[i])) {

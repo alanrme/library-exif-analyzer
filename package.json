@@ -16,6 +16,7 @@
   "license": "UNLICENSED",
   "dependencies": {
     "@electron/remote": "^2.1.2",
+    "chart.js": "^4.4.1",
     "electron-squirrel-startup": "^1.0.0",
     "exifreader": "^4.21.0"
   },
