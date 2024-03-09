@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'">
     <title>EXIF analyzer</title>
 
     <link rel="stylesheet" href="./index.css">
@@ -62,11 +63,16 @@
         <div class="section" id="flengths35">
             <h1>Breakdown by focal lengths (35mm eq.)</h1>
             <div class="loader"></div>
-            <div id="flength35data"></div>
+            <div>
+                <canvas id="flength35chart"></canvas>
+            </div>           
+                <div class="card">   
+                <div id="flength35data"></div>
+            </div>
     
             <template id="flength35prog">
-                <div class="flength35 card">
-                    <h2 class="flength35"></h2>
+                <div class="flength35">
+                    <p class="flength35"></p>
                     <progress value="0" max="100"></progress>
                     <span class="count"></span>
                 </div>
