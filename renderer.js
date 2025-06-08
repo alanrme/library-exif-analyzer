@@ -126,3 +126,10 @@ dirButton.addEventListener("click", async e => {
         
     lenses = data.lenses
 })
+
+
+loadingProgBar = document.getElementById('loadingprog')
+window.API.onLoadingProgress((progress) => {
+    console.log(progress)
+    loadingProgBar.value = progress
+})

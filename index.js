@@ -6,8 +6,10 @@ const readdir = promisify(fs.readdir)
 const stat = promisify(fs.stat)
 const ExifReader = require('exifreader')
 
+let win
+
 const createWindow = () => {
-    const win = new BrowserWindow({
+    win = new BrowserWindow({
         width: 800,
         height: 600,
         webPreferences: {
@@ -68,7 +70,8 @@ loadData = async (dirs) => {
         promises.push(new Promise((resolve, reject) => {
             getFiles(dir)
                 .then(async files => {
-                    for await (file of files) {
+                    const fileCount = files.length
+                    for await (const [index, file] of files.entries()) {
                         try {
                             // length option loads first 128kb of the file which is likely to contain necessary metadata
                             tags = await ExifReader.load(file, {length: 128 * 1024})
@@ -108,6 +111,8 @@ loadData = async (dirs) => {
                             console.error(e)
                             continue
                         }
+
+                        win.webContents.send('loading-progress', 100*(index/fileCount))
                     }
                 })
                 .then(() => resolve())
