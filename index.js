@@ -1,9 +1,9 @@
 const { app, BrowserWindow, dialog, ipcMain } = require('electron')
 const { promisify } = require('util')
 const path = require("path")
-const fs = require("fs")
-const readdir = promisify(fs.readdir)
-const stat = promisify(fs.stat)
+const fs = require("fs").promises
+//const readdir = promisify(fs.readdir)
+//const stat = promisify(fs.stat)
 const ExifReader = require('exifreader')
 
 let win
@@ -46,11 +46,11 @@ app.on('window-all-closed', () => {
 })
 
 getFiles = async (dir) => {
-    const subdirs = await readdir(dir)
+    const subdirs = await fs.readdir(dir)
     const files = await Promise.all(subdirs.map(async (subdir) => {
         try {
             const res = path.resolve(dir, subdir)
-            return (await stat(res)).isDirectory() ? getFiles(res) : res
+            return (await fs.stat(res)).isDirectory() ? getFiles(res) : res
         } catch (e) {
             console.error(e)
         }
@@ -65,7 +65,7 @@ loadData = async (dirs) => {
     makes = {}
     lenses = {}
     fLengths35 = {}
-    total = 0
+    total = { count: 0, size: 0 }
     for (dir of dirs) {
         promises.push(new Promise((resolve, reject) => {
             getFiles(dir)
@@ -75,13 +75,18 @@ loadData = async (dirs) => {
                         try {
                             // length option loads first 128kb of the file which is likely to contain necessary metadata
                             tags = await ExifReader.load(file, {length: 128 * 1024})
-                            // increment total if file has successfully loaded
-                            total++
     
                             // if any tags that this program uses are missing, try loading the entire file
                             if (["Make", "Model", "FocalLengthIn35mmFilm"].some((i) => !tags[i])) {
                                 tags = await ExifReader.load(file)
                             }
+
+                            // read file stats and get size property (in byes)
+                            const stat = await fs.stat(file)
+
+                            // increment total after file has successfully loaded
+                            total.count++
+                            total.size += stat.size
     
                             // ?. is optional chaining,  it causes the value to default to undefined if
                             // the property succeeding ?. doesn't exist.
@@ -89,24 +94,27 @@ loadData = async (dirs) => {
                             // if make not in object, add it with count 1, otherwise increase count
                             if (makes[make]) {
                                 makes[make].count++
+                                makes[make].size += stat.size
                             } else {
-                                makes[make] = { count: 1, models: {} }
+                                makes[make] = { count: 1, size: stat.size, models: {} }
                             }
     
                             model = tags.Model?.value[0] || "Unknown"
                             if (makes[make].models[model]) {
-                                makes[make].models[model]++
+                                makes[make].models[model].count++
+                                makes[make].models[model].size += stat.size
                             } else {
-                                makes[make].models[model] = 1
+                                makes[make].models[model] = { count: 1, size: stat.size }
                             }
     
                             fLength35 = tags.FocalLengthIn35mmFilm?.value || "Unknown"
                             if (fLengths35[fLength35]) {
-                                fLengths35[fLength35]++
+                                fLengths35[fLength35].count++
+                                fLengths35[fLength35].size += stat.size
                             } else {
-                                fLengths35[fLength35] = 1
+                                fLengths35[fLength35] = { count: 1, size: stat.size }
                             }
-                            console.log(make, model, fLength35)
+                            console.log(make, model, fLength35, stat.size)
                         } catch (e) {
                             console.error(e)
                             continue
@@ -120,7 +128,13 @@ loadData = async (dirs) => {
     }
 
     await Promise.all(promises)
-    console.log("aaaaaaaaaaaaaaaaaaaaaaaaghghhghgh")
+    console.log({
+        makes: makes,
+        lenses: lenses,
+        focalLengths35: fLengths35,
+        total: total
+    })
+    console.log(JSON.stringify(makes))
     return {
         makes: makes,
         lenses: lenses,
