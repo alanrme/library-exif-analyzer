@@ -22,12 +22,12 @@ const createWindow = () => {
     
     win.loadFile('index.html')
     
-    ipcMain.handle('dialog:openDirectory', async (event) => {
+    ipcMain.handle('dialog:openDirectory', async (event, options) => {
         const { canceled, filePaths } = await dialog.showOpenDialog(win, {
             properties: ['openDirectory']
         })
         if (canceled) return
-        return await loadData(filePaths)
+        return await loadData(filePaths, options)
     })
 }
 
@@ -58,7 +58,7 @@ getFiles = async (dir) => {
     return files.reduce((a, f) => a.concat(f), []);
 }
 
-loadData = async (dirs) => {
+loadData = async (dirs, options) => {
     // make a list of promises for each iteration of the for loop
     promises = []
 
@@ -66,6 +66,7 @@ loadData = async (dirs) => {
     lenses = {}
     fLengths35 = {}
     total = { count: 0, size: 0 }
+    
     for (dir of dirs) {
         promises.push(new Promise((resolve, reject) => {
             getFiles(dir)
@@ -73,13 +74,32 @@ loadData = async (dirs) => {
                     const fileCount = files.length
                     for await (const [index, file] of files.entries()) {
                         try {
-                            // length option loads first 128kb of the file which is likely to contain necessary metadata
-                            tags = await ExifReader.load(file, {length: 128 * 1024})
+                            let tags // exif tags
+
+                            // if extra exif data is not requested
+                            if (options.extraData == "false") {
+                                // length option loads first 128kb of the file which is likely to contain necessary metadata
+                                tags = await ExifReader.load(file, {length: 128 * 1024})
     
-                            // if any tags that this program uses are missing, try loading the entire file
-                            if (["Make", "Model", "FocalLengthIn35mmFilm"].some((i) => !tags[i])) {
+                                // if any tags that this program uses are missing, try loading the entire file
+                                if (["Make", "Model", "FocalLengthIn35mmFilm"].some((i) => !tags[i])) {
+                                    tags = await ExifReader.load(file)
+                                }
+                            }
+                            // else load the full file
+                            else {
                                 tags = await ExifReader.load(file)
                             }
+
+                            /*
+                            fs.writeFile('./samples/'+file.replace(/^.*[\\/]/, ''), JSON.stringify(tags), 'utf8', (err) => {
+                                if (err) {
+                                  console.error('Error writing file:', err);
+                                  return;
+                                }
+                                console.log('File written successfully!');
+                            });
+                            */
 
                             // read file stats and get size property (in byes)
                             const stat = await fs.stat(file)

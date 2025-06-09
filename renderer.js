@@ -11,6 +11,7 @@ lengths35Data = document.getElementById("flength35data")
 lengths35Canvas = document.getElementById('flength35chart').getContext('2d')
 
 metricButtons = document.getElementsByName("metric")
+extraDataButtons = document.getElementsByName("extradata")
 
 // labels for the graph axis depending on what metric is selected
 const axisLabels = {
@@ -24,8 +25,19 @@ let metric = "count"
 
 dirButton.addEventListener("click", async e => {
     statusH.innerText = "Loading photos..."
-    data = await window.API.selectFolder()
+
+    options = {
+        extraData: "false"
+    }
+
+    for (button of extraDataButtons) {
+        if (button.checked)
+            options.extraData = button.value
+    }
+    
+    data = await window.API.selectFolder(options)
     console.log(data)
+    console.log(JSON.stringify(data))
     
     updateGraphs(data, metric)
 })
@@ -65,7 +77,7 @@ function updateGraphs(data, metric) {
         makeTxt = document.createTextNode(makeName)
         maketmpl.getElementsByClassName("make")[0].appendChild(makeTxt)
         
-        console.log(make.models, Object.keys(make.models))
+        //console.log(make.models, Object.keys(make.models))
         for (model of Object.keys(make.models)) {
             modelCount = make.models[model][metric]
             

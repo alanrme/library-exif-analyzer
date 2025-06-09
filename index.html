@@ -13,7 +13,17 @@
 <body>
     <div class="section">
         <h1 id="status">Welcome.</h1>
+        
+        Read additional data (Motion pictures, etc) (Takes <u>MUCH</u> longer to scan):
+        <input type="radio" name="extradata" value="true">
+        <label for="html">Yes</label>
+        <input type="radio" name="extradata" value="false" checked="checked">
+        <label for="css">No</label>
+
+        <br>
+
         Select directory <input id="openpicker" type="button" value="Select directory" />
+        <br>
         <progress id="loadingprog" value="0" max="100"></progress>
 
         <br>
