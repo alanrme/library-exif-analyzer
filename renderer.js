@@ -10,6 +10,7 @@ modelData = document.getElementById("modeldata")
 lengths35Data = document.getElementById("flength35data")
 lengths35Canvas = document.getElementById('flength35chart').getContext('2d')
 
+attributeButtons = document.getElementsByName("attributes")
 metricButtons = document.getElementsByName("metric")
 extraDataButtons = document.getElementsByName("extradata")
 
@@ -27,6 +28,7 @@ dirButton.addEventListener("click", async e => {
     statusH.innerText = "Loading photos..."
 
     options = {
+        attributes: {},
         extraData: "false"
     }
 
@@ -34,7 +36,11 @@ dirButton.addEventListener("click", async e => {
         if (button.checked)
             options.extraData = button.value
     }
+    for (button of attributeButtons) {
+        options.attributes[button.value] = button.checked
+    }
     
+    console.log(options)
     data = await window.API.selectFolder(options)
     console.log(data)
     console.log(JSON.stringify(data))

@@ -6,6 +6,8 @@ const fs = require("fs").promises
 //const stat = promisify(fs.stat)
 const ExifReader = require('exifreader')
 
+const { main: data } = require('./data.js')
+
 let win
 
 const createWindow = () => {
@@ -66,6 +68,16 @@ loadData = async (dirs, options) => {
     lenses = {}
     fLengths35 = {}
     total = { count: 0, size: 0 }
+
+    // list of exif tags to look for
+    let searchTags = []
+    // for every attribute the user has selected, add its corresponding exif tags from data.js
+    for (attr in options.attributes) {
+        if (options.attributes[attr]) {
+            searchTags = searchTags.concat(data.attributeTags[attr])
+        }
+    }
+    console.log(searchTags)
     
     for (dir of dirs) {
         promises.push(new Promise((resolve, reject) => {
@@ -81,8 +93,8 @@ loadData = async (dirs, options) => {
                                 // length option loads first 128kb of the file which is likely to contain necessary metadata
                                 tags = await ExifReader.load(file, {length: 128 * 1024})
     
-                                // if any tags that this program uses are missing, try loading the entire file
-                                if (["Make", "Model", "FocalLengthIn35mmFilm"].some((i) => !tags[i])) {
+                                // if any tags to look for are missing, try loading the entire file
+                                if (searchTags.some((i) => !tags[i])) {
                                     tags = await ExifReader.load(file)
                                 }
                             }
@@ -92,7 +104,7 @@ loadData = async (dirs, options) => {
                             }
 
                             /*
-                            fs.writeFile('./samples/'+file.replace(/^.*[\\/]/, ''), JSON.stringify(tags), 'utf8', (err) => {
+                            fs.writeFile('./samples/'+file.replace(/^.*[\\/]/, '')+'.json', JSON.stringify(tags), 'utf8', (err) => {
                                 if (err) {
                                   console.error('Error writing file:', err);
                                   return;

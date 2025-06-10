@@ -14,19 +14,33 @@
     <div class="section">
         <h1 id="status">Welcome.</h1>
         
-        Read additional data (Motion pictures, etc) (Takes <u>MUCH</u> longer to scan):
-        <input type="radio" name="extradata" value="true">
-        <label for="html">Yes</label>
-        <input type="radio" name="extradata" value="false" checked="checked">
-        <label for="css">No</label>
+        Attributes to scan (Selecting more can take longer to scan):
+        <br>
+        <input type="checkbox" name="attributes" value="model" checked="checked">
+        <label>Camera make/model</label><br>
+        <input type="checkbox" name="attributes" value="fLength" checked="checked">
+        <label>Focal length</label><br>
+        <input type="checkbox" name="attributes" value="lModel">
+        <label>Lens make/model</label><br>
+        <input type="checkbox" name="attributes" value="aperture">
+        <label>Aperture</label><br>
 
         <br>
+
+        Additional attributes (Motion pictures, etc) (Takes <u>MUCH</u> longer to scan):
+        <br>
+        <input type="radio" name="extradata" value="true">
+        <label>Yes</label>
+        <input type="radio" name="extradata" value="false" checked="checked">
+        <label>No</label>
+
+        <br><br>
 
         Select directory <input id="openpicker" type="button" value="Select directory" />
         <br>
         <progress id="loadingprog" value="0" max="100"></progress>
 
-        <br>
+        <br><br>
 
         Select the metric you want to view:
         <input type="radio" name="metric" value="count" checked="checked">
