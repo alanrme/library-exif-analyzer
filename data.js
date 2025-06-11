@@ -7,10 +7,10 @@ module.exports = {
     },
     main: {
         attributeTags: {
-            model: ["Make", "Model"],
-            fLength: ["FocalLengthIn35mmFilm"],
-            lModel: ["LensMake", "LensModel"],
-            aperture: ["ApertureValue"]
+            makes: ["Make", "Model"],
+            fLengths35: ["FocalLengthIn35mmFilm"],
+            lMakes: ["LensMake", "LensModel"],
+            apertures: ["ApertureValue"]
         }
     }
 }

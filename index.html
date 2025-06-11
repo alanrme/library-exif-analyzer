@@ -16,13 +16,13 @@
         
         Attributes to scan (Selecting more can take longer to scan):
         <br>
-        <input type="checkbox" name="attributes" value="model" checked="checked">
+        <input type="checkbox" name="attributes" value="makes" checked="checked">
         <label>Camera make/model</label><br>
-        <input type="checkbox" name="attributes" value="fLength" checked="checked">
+        <input type="checkbox" name="attributes" value="fLengths35" checked="checked">
         <label>Focal length</label><br>
-        <input type="checkbox" name="attributes" value="lModel">
+        <input type="checkbox" name="attributes" value="lMakes">
         <label>Lens make/model</label><br>
-        <input type="checkbox" name="attributes" value="aperture">
+        <input type="checkbox" name="attributes" value="apertures">
         <label>Aperture</label><br>
 
         <br>
@@ -33,6 +33,7 @@
         <label>Yes</label>
         <input type="radio" name="extradata" value="false" checked="checked">
         <label>No</label>
+        <input id="extradatainfo" type="button" value="More info" />
 
         <br><br>
 
@@ -106,6 +107,25 @@
             <template id="flength35prog">
                 <div class="flength35">
                     <p class="flength35"></p>
+                    <progress value="0" max="100"></progress>
+                    <span class="count"></span>
+                </div>
+            </template>
+        </div>
+
+        <div class="section" id="aperture">
+            <h1>Breakdown by aperture (f/)</h1>
+            <div class="loader"></div>
+            <div>
+                <canvas id="aperturechart"></canvas>
+            </div>           
+                <div class="card">   
+                <div id="aperturedata"></div>
+            </div>
+    
+            <template id="apertureprog">
+                <div class="aperture">
+                    <p class="aperture"></p>
                     <progress value="0" max="100"></progress>
                     <span class="count"></span>
                 </div>

@@ -64,10 +64,10 @@ loadData = async (dirs, options) => {
     // make a list of promises for each iteration of the for loop
     promises = []
 
-    makes = {}
-    lenses = {}
-    fLengths35 = {}
-    total = { count: 0, size: 0 }
+    result = {
+        options: options,
+        total: { count: 0, size: 0 }
+    }
 
     // list of exif tags to look for
     let searchTags = []
@@ -75,6 +75,7 @@ loadData = async (dirs, options) => {
     for (attr in options.attributes) {
         if (options.attributes[attr]) {
             searchTags = searchTags.concat(data.attributeTags[attr])
+            result[attr] = {}
         }
     }
     console.log(searchTags)
@@ -89,7 +90,7 @@ loadData = async (dirs, options) => {
                             let tags // exif tags
 
                             // if extra exif data is not requested
-                            if (options.extraData == "false") {
+                            if (options.extraData == false) {
                                 // length option loads first 128kb of the file which is likely to contain necessary metadata
                                 tags = await ExifReader.load(file, {length: 128 * 1024})
     
@@ -104,7 +105,8 @@ loadData = async (dirs, options) => {
                             }
 
                             /*
-                            fs.writeFile('./samples/'+file.replace(/^.*[\\/]/, '')+'.json', JSON.stringify(tags), 'utf8', (err) => {
+                            const etags = await ExifReader.load(file, {expanded: true});
+                            fs.writeFile('./samples/'+file.replace(/^.*[\\/]/, '')+'.json', JSON.stringify(etags), 'utf8', (err) => {
                                 if (err) {
                                   console.error('Error writing file:', err);
                                   return;
@@ -117,36 +119,52 @@ loadData = async (dirs, options) => {
                             const stat = await fs.stat(file)
 
                             // increment total after file has successfully loaded
-                            total.count++
-                            total.size += stat.size
+                            result.total.count++
+                            result.total.size += stat.size
     
-                            // ?. is optional chaining,  it causes the value to default to undefined if
-                            // the property succeeding ?. doesn't exist.
-                            make = tags.Make?.value[0] || "Unknown"
-                            // if make not in object, add it with count 1, otherwise increase count
-                            if (makes[make]) {
-                                makes[make].count++
-                                makes[make].size += stat.size
-                            } else {
-                                makes[make] = { count: 1, size: stat.size, models: {} }
+                            if (options.attributes.makes) {
+                                // ?. is optional chaining,  it causes the value to default to undefined if
+                                // the property succeeding ?. doesn't exist.
+                                make = tags.Make?.value[0] || "Unknown"
+                                // if make is not a property, add it with count 1, otherwise increase count
+                                if (result.makes[make]) {
+                                    result.makes[make].count++
+                                    result.makes[make].size += stat.size
+                                } else {
+                                    result.makes[make] = { count: 1, size: stat.size, models: {} }
+                                }
+                            
+                                model = tags.Model?.value[0] || "Unknown"
+                                if (result.makes[make].models[model]) {
+                                    result.makes[make].models[model].count++
+                                    result.makes[make].models[model].size += stat.size
+                                } else {
+                                    result.makes[make].models[model] = { count: 1, size: stat.size }
+                                }
                             }
-    
-                            model = tags.Model?.value[0] || "Unknown"
-                            if (makes[make].models[model]) {
-                                makes[make].models[model].count++
-                                makes[make].models[model].size += stat.size
-                            } else {
-                                makes[make].models[model] = { count: 1, size: stat.size }
+
+                            if (options.attributes.fLengths35) {
+                                fLength35 = tags.FocalLengthIn35mmFilm?.value || "Unknown"
+                                if (result.fLengths35[fLength35]) {
+                                    result.fLengths35[fLength35].count++
+                                    result.fLengths35[fLength35].size += stat.size
+                                } else {
+                                    result.fLengths35[fLength35] = { count: 1, size: stat.size }
+                                }
                             }
-    
-                            fLength35 = tags.FocalLengthIn35mmFilm?.value || "Unknown"
-                            if (fLengths35[fLength35]) {
-                                fLengths35[fLength35].count++
-                                fLengths35[fLength35].size += stat.size
-                            } else {
-                                fLengths35[fLength35] = { count: 1, size: stat.size }
+
+                            if (options.attributes.apertures) {
+                                aperture = tags.ApertureValue?.description || "Unknown"
+                                if (result.apertures[aperture]) {
+                                    result.apertures[aperture].count++
+                                    result.apertures[aperture].size += stat.size
+                                } else {
+                                    result.apertures[aperture] = { count: 1, size: stat.size }
+                                }
                             }
-                            console.log(make, model, fLength35, stat.size)
+
+
+                            console.log(stat.size)
                         } catch (e) {
                             console.error(e)
                             continue
@@ -160,17 +178,6 @@ loadData = async (dirs, options) => {
     }
 
     await Promise.all(promises)
-    console.log({
-        makes: makes,
-        lenses: lenses,
-        focalLengths35: fLengths35,
-        total: total
-    })
-    console.log(JSON.stringify(makes))
-    return {
-        makes: makes,
-        lenses: lenses,
-        focalLengths35: fLengths35,
-        total: total
-    }
+    console.log(result)
+    return result
 }
